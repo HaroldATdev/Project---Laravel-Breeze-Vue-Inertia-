@@ -135,6 +135,7 @@ Tests:    3 passed (26 assertions)
 ---
 
 ## 📂 Rutas principales
+| Rutas                                                                                         |
 |-----------------------------------------------------------------------------------------------|
 | GET    | `/dashboard`    | Resumen del inventario (lowStock según `min_stock`)                |
 | GET    | `/products`     | Listado de productos (CRUD completo)                               |
@@ -147,6 +148,8 @@ Tests:    3 passed (26 assertions)
 | GET    | `/sales/{id}`   | Detalle/factura de la venta                                        |
 | GET    | `/kardex`       | Historial de movimientos con filtros                               |
 | POST   | `/kardex`       | Registrar movimiento `entrada`/`ajuste` (actualiza `current_stock`)|
+
+---
 
 > El stock físico se abastece/gestiona **exclusivamente** a través de movimientos de kardex (`entrada` / `ajuste`) vía `POST /kardex`, que actualiza `current_stock` y registra el movimiento con stock anterior/nuevo dentro de una transacción con bloqueo pesimista (`lockForUpdate`). Las salidas (`venta`) pasan por `SaleController::store`. Un producto sólo puede eliminarse físicamente si **no tiene movimientos de kardex** registrados.
 
