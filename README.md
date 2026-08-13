@@ -29,15 +29,19 @@ git clone <repo-url> vinos-kardex
 cd vinos-kardex
 
 # 2. Crear el archivo de entorno y las variables de Docker
+# En Linux / macOS / Git Bash:
 cp .env.example .env
 
-# 3. Instalar dependencias de PHP dentro del contenedor
-docker run --rm \
-    -u "$(id -u):$(id -g)" \
-    -v "$PWD":/var/www/html \
-    -w /var/www/html \
-    laravelsail/php84-composer:latest \
-    composer install --ignore-platform-reqs
+# En Windows (PowerShell):
+Copy-Item .env.example .env
+
+# En Windows (CMD):
+copy .env.example .env
+
+# 3. Instalar dependencias de PHP dentro del contenedor (compatible con Windows y Linux)
+docker run --rm -e COMPOSER_PROCESS_TIMEOUT=0 -v "${PWD}:/var/www/html" -w /var/www/html laravelsail/php84-composer:latest composer install --ignore-platform-reqs
+
+> **Nota para usuarios de Windows:** Si al ejecutar `docker compose up -d` obtienes un error en el puerto `3306` (*"bind: Only one usage of each socket address"*), significa que tienes un servicio de MySQL o MariaDB corriendo de forma nativa en tu PC. Debes detenerlo temporalmente desde los servicios de Windows (`services.msc`) o cambiar el puerto en tu archivo `.env` configurando `FORWARD_DB_PORT=3307`.
 
 # 4. Generar la clave de la aplicación
 docker compose run --rm laravel.test php artisan key:generate
@@ -52,6 +56,16 @@ docker compose exec laravel.test php artisan migrate:fresh --seed
 docker compose exec laravel.test npm install
 docker compose exec laravel.test npm run build
 ```
+
+## 🛠️ Solución de problemas comunes en Windows
+
+1. **Conflicto con el puerto 3306:**
+   Si al ejecutar `docker compose up -d` obtienes un error de puerto ocupado (`bind: Only one usage of each socket address`), significa que tienes un servicio de MySQL corriendo nativamente en tu PC. Detenlo desde los servicios de Windows (`services.msc`) o cambia el puerto en tu archivo `.env` con `FORWARD_DB_PORT=3307`.
+
+2. **Interrupción durante la construcción de la imagen:**
+   Si la compilación de Docker se detiene por un problema temporal de red o descompresión, puedes reanudarla y reintentarla de forma limpia ejecutando:
+   ```bash
+   docker compose build
 
 Listo. La aplicación queda disponible en:
 
