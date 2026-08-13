@@ -135,19 +135,20 @@ Tests:    3 passed (26 assertions)
 ---
 
 ## 📂 Rutas principales
-| Rutas                                                                                         |
-|-----------------------------------------------------------------------------------------------|
-| GET    | `/dashboard`    | Resumen del inventario (lowStock según `min_stock`)                |
-| GET    | `/products`     | Listado de productos (CRUD completo)                               |
-| POST   | `/products`     | Crear producto (catálogo puro, stock 0)                            |
-| PUT    | `/products/{id}`| Editar ficha + `min_stock`                                         |
-| DELETE | `/products/{id}`| Eliminar (sólo si no tiene movimientos de kardex)                  |
-| GET    | `/sales`        | Listado de ventas                                                  |
-| GET    | `/sales/create` | Punto de venta (agregar ítems + registrar)                         |
-| POST   | `/sales`        | Registrar venta (descuenta stock + kardex, transaccional)          |
-| GET    | `/sales/{id}`   | Detalle/factura de la venta                                        |
-| GET    | `/kardex`       | Historial de movimientos con filtros                               |
-| POST   | `/kardex`       | Registrar movimiento `entrada`/`ajuste` (actualiza `current_stock`)|
+
+| Método | Ruta | Descripción |
+| :--- | :--- | :--- |
+| `GET`    | `/dashboard`    | Resumen del inventario (lowStock según `min_stock`)                |
+| `GET`    | `/products`     | Listado de productos (CRUD completo)                               |
+| `POST`   | `/products`     | Crear producto (catálogo puro, stock 0)                            |
+| `PUT`    | `/products/{id}`| Editar ficha + `min_stock`                                         |
+| `DELETE` | `/products/{id}`| Eliminar (sólo si no tiene movimientos de kardex)                  |
+| `GET`    | `/sales`        | Listado de ventas                                                  |
+| `GET`    | `/sales/create` | Punto de venta (agregar ítems + registrar)                         |
+| `POST`   | `/sales`        | Registrar venta (descuenta stock + kardex, transaccional)          |
+| `GET`    | `/sales/{id}`   | Detalle/factura de la venta                                        |
+| `GET`    | `/kardex`       | Historial de movimientos con filtros                               |
+| `POST`   | `/kardex`       | Registrar movimiento `entrada`/`ajuste` (actualiza `current_stock`)|
 
 ---
 
