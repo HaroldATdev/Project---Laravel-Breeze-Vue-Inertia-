@@ -135,7 +135,7 @@ Tests:    3 passed (26 assertions)
 ---
 
 ## 📂 Rutas principales
-
+|-----------------------------------------------------------------------------------------------|
 | GET    | `/dashboard`    | Resumen del inventario (lowStock según `min_stock`)                |
 | GET    | `/products`     | Listado de productos (CRUD completo)                               |
 | POST   | `/products`     | Crear producto (catálogo puro, stock 0)                            |
