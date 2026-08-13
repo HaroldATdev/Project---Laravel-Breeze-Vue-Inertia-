@@ -1,6 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import InputError from '@/Components/InputError.vue';
+import TextInput from '@/Components/TextInput.vue';
 
 defineProps({
     movements: { type: Object, required: true },
@@ -23,13 +26,31 @@ function applyFilters() {
     }, { preserveState: true, replace: true });
 }
 
+// Formulario de registro de movimientos (entrada / ajuste) — el stock físico
+// sólo se abastece a través del kardex.
+const movementForm = useForm({
+    product_id: '',
+    movement_type: 'entrada',
+    quantity: '',
+    reference: '',
+});
+
+const movementTypesRegister = ['entrada', 'ajuste'];
+
+function registerMovement() {
+    movementForm.post(route('kardex.store'), {
+        preserveScroll: true,
+        onSuccess: () => movementForm.reset(),
+    });
+}
+
 const typeBadge = {
     entrada: 'bg-green-100 text-green-800',
     venta: 'bg-red-100 text-red-800',
     ajuste: 'bg-amber-100 text-amber-800',
 };
 
-const dateFmt = (value) => new Date(value).toLocaleString('es-CL');
+const dateFmt = (value) => new Date(value).toLocaleString('es-PE');
 </script>
 
 <template>
@@ -63,6 +84,46 @@ const dateFmt = (value) => new Date(value).toLocaleString('es-CL');
                             <input v-model="form.reference" @keyup.enter="applyFilters" type="text" placeholder="V-20260001..." class="mt-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
                         </div>
                         <button @click="applyFilters" class="rounded-md bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-gray-700">Filtrar</button>
+                    </div>
+
+                                        <!-- Registro de movimientos de entrada / ajuste -->
+                    <div class="border-b border-gray-200 p-6">
+                        <h3 class="mb-4 text-sm font-semibold text-gray-700">Registrar movimiento de entrada / ajuste</h3>
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-4 items-end gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Producto</label>
+                                <select v-model="movementForm.product_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="" disabled>Seleccione un producto…</option>
+                                    <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+                                </select>
+                                <InputError :message="movementForm.errors.product_id" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tipo</label>
+                                <select v-model="movementForm.movement_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option v-for="t in movementTypesRegister" :key="t" :value="t">{{ t }}</option>
+                                </select>
+                                <InputError :message="movementForm.errors.movement_type" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Cantidad</label>
+                                <TextInput v-model.number="movementForm.quantity" type="number" step="1" min="1" class="mt-1 block w-full" />
+                                <InputError :message="movementForm.errors.quantity" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Referencia</label>
+                                <TextInput v-model="movementForm.reference" type="text" placeholder="Factura, Guía…" class="mt-1 block w-full" />
+                                <InputError :message="movementForm.errors.reference" />
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <PrimaryButton :disabled="movementForm.processing" @click="registerMovement">
+                                Registrar movimiento
+                            </PrimaryButton>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">
+                            El movimiento actualiza el stock físico del producto y se registra en el kardex con el stock anterior y nuevo.
+                        </p>
                     </div>
 
                     <table class="min-w-full divide-y divide-gray-200">

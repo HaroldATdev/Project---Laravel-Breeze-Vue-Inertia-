@@ -1,12 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
+import { currency } from '@/composables/useCurrency';
 
 defineProps({
     stats: { type: Object, required: true },
 });
-
-const currency = (value) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Number(value) || 0);
 </script>
 
 <template>

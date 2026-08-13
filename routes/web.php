@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
             'totalStock' => App\Models\Product::sum('current_stock'),
             'stockValue' => App\Models\Product::query()->selectRaw('SUM(current_stock * sale_price) as value')->value('value') ?? 0,
             'sales' => App\Models\Sale::count(),
-            'lowStock' => App\Models\Product::where('current_stock', '<=', 10)->count(),
+                        'lowStock' => App\Models\Product::whereColumn('current_stock', '<=', 'min_stock')->count(),
         ],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -37,8 +37,9 @@ Route::middleware('auth')->group(function () {
     // Productos (inventario)
     Route::resource('products', ProductController::class)->except(['show']);
 
-    // Kardex
+        // Kardex (consultar movimientos + registrar entradas/ajustes)
     Route::get('kardex', KardexController::class)->name('kardex.index');
+    Route::post('kardex', [KardexController::class, 'store'])->name('kardex.store');
 
     // Ventas
     Route::get('sales', [SaleController::class, 'index'])->name('sales.index');

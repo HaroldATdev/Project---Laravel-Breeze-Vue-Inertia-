@@ -16,19 +16,19 @@ class Product extends Model
         'type',
         'presentation',
         'sale_price',
-        'initial_stock',
+        'min_stock',
         'current_stock',
     ];
 
     protected $casts = [
         'sale_price' => 'decimal:2',
-        'initial_stock' => 'integer',
+        'min_stock' => 'integer',
         'current_stock' => 'integer',
     ];
 
     public function kardexMovements(): HasMany
     {
-        return $this->hasMany(KardexMovement::class);
+        return $this->hasMany(KardexMovement::class)->orderBy('created_at', 'desc');
     }
 
     public function saleItems(): HasMany
@@ -39,5 +39,10 @@ class Product extends Model
     public function getIsAvailableAttribute(): bool
     {
         return $this->current_stock > 0;
+    }
+
+    public function getIsLowStockAttribute(): bool
+    {
+        return $this->current_stock <= $this->min_stock;
     }
 }

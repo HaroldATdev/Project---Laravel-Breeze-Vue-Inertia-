@@ -2,13 +2,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Link } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
+import { currency } from '@/composables/useCurrency';
 
 defineProps({
     sale: { type: Object, required: true },
 });
 
-const currency = (value) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Number(value) || 0);
-const dateFmt = (value) => new Date(value).toLocaleString('es-CL');
+const dateFmt = (value) => new Date(value).toLocaleString('es-PE');
 </script>
 
 <template>

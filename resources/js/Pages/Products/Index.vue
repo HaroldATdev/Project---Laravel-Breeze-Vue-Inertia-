@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
+import { currency } from '@/composables/useCurrency';
 
 defineProps({
     products: { type: Object, required: true },
@@ -21,13 +22,11 @@ function applyFilters() {
 }
 
 function destroy(product) {
-    if (!confirm(`¿Eliminar el producto "${product.name}"? Solo se permitirá si no tiene stock ni ventas.`)) {
+    if (!confirm(`¿Eliminar el producto "${product.name}"? Sólo se permite si no tiene movimientos registrados en el kardex.`)) {
         return;
     }
     router.delete(route('products.destroy', product.id));
 }
-
-const currency = (value) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Number(value) || 0);
 </script>
 <template>
     <Head title="Productos" />
@@ -98,8 +97,8 @@ const currency = (value) => new Intl.NumberFormat('es-CL', { style: 'currency', 
                                 <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{{ product.presentation }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-900">{{ currency(product.sale_price) }}</td>
                                 <td class="whitespace-nowrap px-6 py-4 text-right">
-                                    <span
-                                        :class="product.current_stock === 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
+                                                                        <span
+                                        :class="product.current_stock <= product.min_stock ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
                                         class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
                                     >
                                         {{ product.current_stock }}

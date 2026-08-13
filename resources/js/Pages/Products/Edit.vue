@@ -18,8 +18,9 @@ const form = useForm({
     name: props.product.name,
     brand: props.product.brand,
     type: props.product.type,
-    presentation: props.product.presentation,
+        presentation: props.product.presentation,
     sale_price: props.product.sale_price,
+    min_stock: props.product.min_stock,
 });
 
 function submit() {
@@ -38,17 +39,17 @@ function submit() {
         <div class="py-12">
             <div class="mx-auto max-w-2xl sm:px-6 lg:px-8">
                 <form @submit.prevent="submit" class="space-y-6 bg-white p-6 shadow-sm sm:rounded-lg">
-                    <div class="flex gap-8 rounded-md bg-gray-50 p-4 text-sm">
-                        <div>
-                            <span class="text-gray-500">Stock inicial:</span>
-                            <span class="font-semibold text-gray-900">{{ product.initial_stock }}</span>
-                        </div>
+                                        <div class="flex gap-8 rounded-md bg-gray-50 p-4 text-sm">
                         <div>
                             <span class="text-gray-500">Stock actual:</span>
                             <span class="font-semibold text-gray-900">{{ product.current_stock }}</span>
                         </div>
+                        <div>
+                            <span class="text-gray-500">Stock mínimo:</span>
+                            <span class="font-semibold text-gray-900">{{ product.min_stock }}</span>
+                        </div>
                         <div class="text-xs text-gray-500">
-                            El stock se modifica exclusivamente a través de movimientos de kardex (ventas / ajustes).
+                            El stock físico sólo se modifica mediante movimientos de kardex (entradas / ajustes).
                         </div>
                     </div>
 
@@ -81,10 +82,15 @@ function submit() {
                             </select>
                             <InputError :message="form.errors.presentation" />
                         </div>
-                        <div>
-                            <InputLabel value="Precio de venta (CLP)" />
+                                                <div>
+                            <InputLabel value="Precio de venta (S/)" />
                             <TextInput v-model="form.sale_price" type="number" step="0.01" min="0" class="mt-1 block w-full" required />
                             <InputError :message="form.errors.sale_price" />
+                        </div>
+                        <div>
+                            <InputLabel value="Stock mínimo (punto de reorden)" />
+                            <TextInput v-model.number="form.min_stock" type="number" min="0" class="mt-1 block w-full" />
+                            <InputError :message="form.errors.min_stock" />
                         </div>
                     </div>
 

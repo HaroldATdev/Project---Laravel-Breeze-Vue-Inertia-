@@ -4,7 +4,7 @@ Prueba técnica completa implementada con **Laravel** (backend), **Vue 3 + Inert
 
 El sistema incluye:
 
-- **Gestión de Productos**: CRUD completo con `name`, `brand`, `type`, `presentation`, `sale_price` e `initial_stock`.
+- **Gestión de Productos (catálogo puro)**: CRUD con `name`, `brand`, `type`, `presentation`, `sale_price` y `min_stock` (punto de reorden). El producto nace con `current_stock = 0`; **no se ingresa stock al crearlo**.
 - **Inventario y Kardex**: historial de movimientos (`entrada`, `venta`, `ajuste`) con stock anterior/nuevo y referencia.
   - **Validación estricta**: no se permiten salidas de stock si la cantidad solicitada supera el stock disponible.
 - **Módulo de Ventas**: cabecera + ítems, cálculo automático de subtotales, impuesto y total.
@@ -136,16 +136,19 @@ Tests:    3 passed (26 assertions)
 
 ## 📂 Rutas principales
 
-| Método | URI             | Acción                                    |
-|--------|-----------------|-------------------------------------------|
-| GET    | `/dashboard`    | Resumen del inventario                     |
-| GET    | `/products`     | Listado de productos (CRUD completo)       |
-| GET    | `/sales`        | Listado de ventas                          |
-| GET    | `/sales/create` | Punto de venta (agregar ítems + registrar) |
-| GET    | `/sales/{id}`   | Detalle/factura de la venta                |
-| GET    | `/kardex`       | Historial de movimientos con filtros       |
+| GET    | `/dashboard`    | Resumen del inventario (lowStock según `min_stock`)                |
+| GET    | `/products`     | Listado de productos (CRUD completo)                               |
+| POST   | `/products`     | Crear producto (catálogo puro, stock 0)                            |
+| PUT    | `/products/{id}`| Editar ficha + `min_stock`                                         |
+| DELETE | `/products/{id}`| Eliminar (sólo si no tiene movimientos de kardex)                  |
+| GET    | `/sales`        | Listado de ventas                                                  |
+| GET    | `/sales/create` | Punto de venta (agregar ítems + registrar)                         |
+| POST   | `/sales`        | Registrar venta (descuenta stock + kardex, transaccional)          |
+| GET    | `/sales/{id}`   | Detalle/factura de la venta                                        |
+| GET    | `/kardex`       | Historial de movimientos con filtros                               |
+| POST   | `/kardex`       | Registrar movimiento `entrada`/`ajuste` (actualiza `current_stock`)|
 
-> El módulo de **ajustes de inventario** (`movement_type = ajuste`) está diseñado en el modelo y la migración; se puede exponer fácilmente como un endpoint adicional siguiendo el mismo patrón transaccional de `SaleController`.
+> El stock físico se abastece/gestiona **exclusivamente** a través de movimientos de kardex (`entrada` / `ajuste`) vía `POST /kardex`, que actualiza `current_stock` y registra el movimiento con stock anterior/nuevo dentro de una transacción con bloqueo pesimista (`lockForUpdate`). Las salidas (`venta`) pasan por `SaleController::store`. Un producto sólo puede eliminarse físicamente si **no tiene movimientos de kardex** registrados.
 
 ---
 

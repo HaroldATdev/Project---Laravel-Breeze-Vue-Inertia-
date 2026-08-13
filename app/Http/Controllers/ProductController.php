@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
-use App\Models\KardexMovement;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +13,7 @@ use Inertia\Response;
 class ProductController extends Controller
 {
     /**
-     * Listado de productos (inventario).
+     * Listado de productos (catálogo + inventario).
      */
     public function index(Request $request): Response
     {
@@ -41,7 +40,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Formulario para crear un producto.
+     * Formulario para crear un producto (catálogo puro, stock 0).
      */
     public function create(): Response
     {
@@ -50,35 +49,30 @@ class ProductController extends Controller
 
     /**
      * Guardar un producto nuevo.
+     *
+     * Regla de negocio: el producto es un catálogo puro. No se ingresa stock
+     * inicial en este punto — nace con `current_stock = 0` y el stock físico se
+     * abastecerá exclusivamente mediante movimientos de kardex (entradas,
+     * ajustes, ...). Mantener la trazabilidad contable intacta.
      */
     public function store(ProductRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        $data['current_stock'] = $data['initial_stock'];
+        $data['current_stock'] = 0; // Catálogo puro: nace sin stock físico.
 
         $product = DB::transaction(function () use ($data) {
-            $product = Product::create($data);
-
-            // Todo stock inicial queda respaldado por su movimiento de kardex.
-            KardexMovement::create([
-                'product_id' => $product->id,
-                'movement_type' => KardexMovement::TYPE_ENTRADA,
-                'quantity' => $data['initial_stock'],
-                'previous_stock' => 0,
-                'new_stock' => $data['initial_stock'],
-                'reference' => 'STOCK INICIAL',
-            ]);
-
-            return $product;
+            return Product::create($data);
         });
 
         return redirect()
-            ->route('products.edit', $product)
+            ->route('products.index', $product)
             ->with('success', 'Producto creado correctamente.');
     }
 
     /**
-     * Formulario de edición.
+     * Formulario de edición. Sólo se editan campos de la ficha técnica, el
+     * stock (`current_stock`) y el punto de reorden (`min_stock`). El stock
+     * físico sólo se modifica vía kardex.
      */
     public function edit(Product $product): Response
     {
@@ -88,11 +82,21 @@ class ProductController extends Controller
     }
 
     /**
-     * Actualizar datos del producto. El stock solo se puede ajustar vía kardex.
+     * Actualizar datos de la ficha técnica del producto.
+     *
+     * `current_stock` nunca proviene del formulario: sólo los movimientos de
+     * kardex lo modifican. `min_stock` sí es editable (punto de reorden).
      */
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
-        $data = collect($request->validated())->except('initial_stock')->all();
+        $data = collect($request->validated())->only([
+            'name',
+            'brand',
+            'type',
+            'presentation',
+            'sale_price',
+            'min_stock',
+        ])->all();
 
         $product->update($data);
 
@@ -102,17 +106,19 @@ class ProductController extends Controller
     }
 
     /**
-     * Eliminación lógica / validada.
+     * Eliminación física de un producto.
+     *
+     * Regla de negocio estricta: un producto SÓLO puede eliminarse si NO tiene
+     * ningún movimiento registrado en el kardex. Si existe historial contable
+     * (entradas, salidas o ajustes), se bloquea la eliminación preservando la
+     * trazabilidad y se informa al usuario.
      */
     public function destroy(Product $product): RedirectResponse
     {
-        // Si el producto tiene movimientos o ventas asociadas, se rehúsa la eliminación.
-        $soldCount = $product->saleItems()->count();
-
-        if ($soldCount > 0 || $product->current_stock > 0) {
+        if ($product->kardexMovements()->exists()) {
             return redirect()
-                ->route('products.index')
-                ->with('error', 'No se puede eliminar un producto con stock o con ventas asociadas. Utilice un ajuste de inventario.');
+                ->back()
+                ->with('error', 'No se puede eliminar el producto "'.$product->name.'" porque tiene movimientos registrados en el kardex. Gestione el stock/estado antes de eliminarlo.');
         }
 
         $product->delete();

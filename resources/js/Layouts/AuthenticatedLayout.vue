@@ -1,13 +1,29 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
+const page = usePage();
 const showingNavigationDropdown = ref(false);
+
+/*
+ * Notificaciones flash globales (éxito / error).
+ * Compartidas desde HandleInertiaRequests::share() y leídas de forma reactiva
+ * desde $page.props.flash para mostrarlas en el layout principal.
+ */
+const dismissed = ref({ success: false, error: false });
+const flash = computed(() => page.props.flash || {});
+const success = computed(() => (flash.value.success && !dismissed.value.success) ? flash.value.success : null);
+const error = computed(() => (flash.value.error && !dismissed.value.error) ? flash.value.error : null);
+
+// Cada vez que llegue un nuevo mensaje, se restablece su estado de "disminuido"
+// para que la alerta se vuelva a mostrar.
+watch(() => flash.value.success, (v) => { if (v) dismissed.value.success = false; });
+watch(() => flash.value.error, (v) => { if (v) dismissed.value.error = false; });
 </script>
 
 <template>
@@ -225,8 +241,46 @@ const showingNavigationDropdown = ref(false);
                 </div>
             </header>
 
-            <!-- Page Content -->
+                        <!-- Page Content -->
             <main>
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 space-y-3">
+                    <!-- Notificación de éxito -->
+                    <div
+                        v-if="success"
+                        class="rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm"
+                    >
+                        <div class="flex items-start">
+                            <svg class="h-5 w-5 flex-shrink-0 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15l2.25-2.25M12 2a10 10 0 100 20a10 10 0 000-20z" />
+                            </svg>
+                            <span class="ml-3 flex-1">{{ success }}</span>
+                            <button @click="dismissed.success = true" class="ml-2 rounded text-emerald-600 hover:text-emerald-800 focus:outline-none">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notificación de error -->
+                    <div
+                        v-if="error"
+                        class="rounded-md border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 shadow-sm"
+                    >
+                        <div class="flex items-start">
+                            <svg class="h-5 w-5 flex-shrink-0 text-rose-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9 1.5A9 9 0 1111.25 3a9 9 0 018.75 7.5z" />
+                            </svg>
+                            <span class="ml-3 flex-1">{{ error }}</span>
+                            <button @click="dismissed.error = true" class="ml-2 rounded text-rose-600 hover:text-rose-800 focus:outline-none">
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <slot />
             </main>
         </div>

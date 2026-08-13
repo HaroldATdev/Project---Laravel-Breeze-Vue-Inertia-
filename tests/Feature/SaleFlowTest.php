@@ -18,7 +18,6 @@ class SaleFlowTest extends TestCase
     {
         $user = User::factory()->create();
         $product = Product::factory()->create([
-            'initial_stock' => 10,
             'current_stock' => 10,
             'sale_price' => 100.00,
         ]);
@@ -63,7 +62,6 @@ class SaleFlowTest extends TestCase
     {
         $user = User::factory()->create();
         $product = Product::factory()->create([
-            'initial_stock' => 5,
             'current_stock' => 5,
         ]);
 
@@ -85,8 +83,8 @@ class SaleFlowTest extends TestCase
     public function test_a_sale_can_include_multiple_products_and_totals_are_consistent(): void
     {
         $user = User::factory()->create();
-        $wine = Product::factory()->create(['sale_price' => 200.00, 'initial_stock' => 20, 'current_stock' => 20]);
-        $sparkling = Product::factory()->create(['sale_price' => 150.00, 'initial_stock' => 10, 'current_stock' => 10]);
+        $wine = Product::factory()->create(['sale_price' => 200.00, 'current_stock' => 20]);
+        $sparkling = Product::factory()->create(['sale_price' => 150.00, 'current_stock' => 10]);
 
         $this->actingAs($user)->post('/sales', [
             'customer_name' => 'Enólogo VIP',

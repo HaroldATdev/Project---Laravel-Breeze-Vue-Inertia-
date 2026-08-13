@@ -6,6 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
+import { currency } from '@/composables/useCurrency';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -21,8 +22,6 @@ const form = useForm({
     tax_rate: 19,
     items: [],
 });
-
-const currency = (value) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Number(value) || 0);
 
 function addProduct() {
     if (!selectedProductId.value) {

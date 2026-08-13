@@ -15,8 +15,8 @@ const form = useForm({
     brand: '',
     type: 'Tinto',
     presentation: '750 ml',
-    sale_price: '',
-    initial_stock: '',
+        sale_price: '',
+    min_stock: 0,
 });
 
 function submit() {
@@ -65,19 +65,20 @@ function submit() {
                             <InputError :message="form.errors.presentation" />
                         </div>
                         <div>
-                            <InputLabel value="Precio de venta (CLP)" />
+                            <InputLabel value="Precio de venta (S/)" />
                             <TextInput v-model="form.sale_price" type="number" step="0.01" min="0" class="mt-1 block w-full" required />
                             <InputError :message="form.errors.sale_price" />
                         </div>
                     </div>
 
-                    <div>
-                        <InputLabel value="Stock inicial" />
-                        <TextInput v-model="form.initial_stock" type="number" min="0" class="mt-1 block w-full" required />
+                                        <div>
+                        <InputLabel value="Stock mínimo (punto de reorden)" />
+                        <TextInput v-model.number="form.min_stock" type="number" min="0" class="mt-1 block w-full" />
                         <p class="mt-1 text-xs text-gray-500">
-                            El stock inicial se registra automáticamente como una entrada en el kardex.
+                            Stock de seguridad: se alerta cuando el inventario físico lo alcance. El stock físico
+                            se abastece exclusivamente a través de movimientos de kardex (entradas / ajustes).
                         </p>
-                        <InputError :message="form.errors.initial_stock" />
+                        <InputError :message="form.errors.min_stock" />
                     </div>
 
                     <div class="flex items-center gap-4">
